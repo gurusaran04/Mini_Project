@@ -1,0 +1,48 @@
+{
+  "tables": [
+    {
+      "name": "Faculty_Advisors",
+      "primaryKey": "Advisor ID",
+      "fields": [
+        { "name": "Advisor ID", "type": "singleLineText", "options": { "unique": true } },
+        { "name": "Name", "type": "singleLineText" },
+        { "name": "Department", "type": "singleSelect", "options": ["Computer Science", "Electronics", "Mechanical", "Civil"] },
+        { "name": "Section", "type": "singleLineText" },
+        { "name": "Email", "type": "email" },
+        { "name": "Phone Number", "type": "phoneNumber" }
+      ]
+    },
+    {
+      "name": "Students_Parent_Directory",
+      "primaryKey": "Roll No",
+      "fields": [
+        { "name": "Roll No", "type": "singleLineText", "options": { "unique": true } },
+        { "name": "Student Name", "type": "singleLineText" },
+        { "name": "Department", "type": "singleSelect", "options": ["Computer Science", "Electronics", "Mechanical", "Civil"] },
+        { "name": "Year", "type": "number", "options": { "precision": 0 } },
+        { "name": "Section", "type": "singleLineText" },
+        { "name": "Parent Phone Number", "type": "phoneNumber" },
+        { "name": "Parent Name", "type": "singleLineText" },
+        { "name": "Class Advisor", "type": "multipleRecordLinks", "options": { "linkedTable": "Faculty_Advisors" } }
+      ]
+    },
+    {
+      "name": "Leave_OD_Requests",
+      "primaryKey": "Request ID",
+      "fields": [
+        { "name": "Request ID", "type": "singleLineText" },
+        { "name": "Student", "type": "multipleRecordLinks", "options": { "linkedTable": "Students_Parent_Directory" } },
+        { "name": "Type", "type": "singleSelect", "options": ["Leave", "OD"] },
+        { "name": "Start Date", "type": "date", "options": { "dateFormat": "YYYY-MM-DD" } },
+        { "name": "End Date", "type": "date", "options": { "dateFormat": "YYYY-MM-DD" } },
+        { "name": "Duration Days", "type": "number", "options": { "precision": 0 } },
+        { "name": "Reason", "type": "multilineText" },
+        { "name": "IVR Call SID", "type": "singleLineText" },
+        { "name": "Recording URL", "type": "url" },
+        { "name": "Status", "type": "singleSelect", "options": ["Pending", "Approved", "Rejected"] },
+        { "name": "Advisor Notes", "type": "multilineText" },
+        { "name": "Created Timestamp", "type": "createdTime" }
+      ]
+    }
+  ]
+}

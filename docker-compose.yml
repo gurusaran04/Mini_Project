@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  # 1. PostgreSQL Database with Auto-Initialization
+  postgres:
+    image: postgres:16-alpine
+    container_name: ivr_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-ivr_admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-securepassword123}
+      POSTGRES_DB: ${POSTGRES_DB:-student_leave_db}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/init.sql
+
+  # 2. Self-Hosted n8n Workflow Automation Engine
+  n8n:
+    image: docker.n8nio/n8nio/n8n:latest
+    container_name: ivr_n8n
+    restart: always
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_BASIC_AUTH_ACTIVE=true
+      - N8N_BASIC_AUTH_USER=${N8N_USER:-admin}
+      - N8N_BASIC_AUTH_PASSWORD=${N8N_PASSWORD:-admin123}
+      - N8N_HOST=${N8N_HOST:-localhost}
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - NODE_ENV=production
+      - WEBHOOK_URL=http://${N8N_HOST:-localhost}:5678/
+    volumes:
+      - n8ndata:/home/node/.n8n
+    depends_on:
+      - postgres
+
+  # 3. Express Backend & Advisor Web Dashboard
+  backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: ivr_backend
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - DATABASE_URL=postgres://${POSTGRES_USER:-ivr_admin}:${POSTGRES_PASSWORD:-securepassword123}@postgres:5432/${POSTGRES_DB:-student_leave_db}
+      - N8N_WEBHOOK_URL=http://n8n:5678/webhook/vapi-ivr-end-call
+    depends_on:
+      - postgres
+
+volumes:
+  pgdata:
+  n8ndata:

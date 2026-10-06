@@ -1,0 +1,36 @@
+{
+  "setupStep": "Vapi Live Telephony & Public Webhook Mapping",
+  "instructions": [
+    "1. Launch start-server.bat or run 'npm start' inside D:\\Mini_Project\\server.",
+    "2. If testing over a real phone call with Vapi, run D:\\Mini_Project\\scripts\\setup_ngrok.bat on port 3000.",
+    "3. Copy the generated ngrok HTTPS forwarding URL e.g. https://a1b2-c3d4.ngrok-free.app",
+    "4. In Vapi Assistant Settings -> Server URL, paste: https://a1b2-c3d4.ngrok-free.app/api/webhook/vapi-end-call",
+    "5. Dial your Vapi assigned Twilio Phone Number to place a live voice call."
+  ],
+  "sampleLiveWebhookPayload": {
+    "message": {
+      "type": "end-of-call-report",
+      "customer": {
+        "number": "+15559876543"
+      },
+      "call": {
+        "id": "CA-LIVE-900123"
+      },
+      "recordingUrl": "https://api.vapi.ai/recordings/sample-live.mp3",
+      "toolCalls": [
+        {
+          "function": {
+            "name": "submitLeaveODRequest",
+            "arguments": {
+              "requestType": "Leave",
+              "startDate": "2026-08-10",
+              "endDate": "2026-08-12",
+              "durationDays": 3,
+              "reason": "Severe fever and flu. Doctor prescribed rest."
+            }
+          }
+        }
+      ]
+    }
+  }
+}

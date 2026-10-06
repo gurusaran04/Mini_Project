@@ -1,0 +1,65 @@
+{
+  "name": "IVR Leave System - 02 Advisor Action & Parent Notification",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "advisor-review-action",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "name": "Advisor Action Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [100, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE leave_od_requests SET status = '={{ $json.body.status }}', advisor_notes = '={{ $json.body.advisorNotes }}', reviewed_at = CURRENT_TIMESTAMP WHERE request_id = '={{ $json.body.requestId }}' RETURNING *;"
+      },
+      "name": "Update Request Status DB",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.2,
+      "position": [320, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT s.student_name, s.roll_no, s.parent_phone_number, s.parent_name FROM students_parent_directory s WHERE s.roll_no = '={{ $json.roll_no }}';"
+      },
+      "name": "Fetch Parent Contact DB",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.2,
+      "position": [540, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// FILE_REF: ./nodes/format_whatsapp_template.js\nconst req = $('Update Request Status DB').first().json;\nconst parent = $input.all()[0]?.json;\nconst status = req.status;\nconst studentName = parent.student_name;\nconst rollNo = parent.roll_no;\nconst requestType = req.request_type;\nconst startDate = req.start_date;\nconst endDate = req.end_date;\nconst advisorNotes = req.advisor_notes || 'None';\nconst parentPhone = parent.parent_phone_number;\n\nlet messageText = '';\nif (status === 'Approved') {\n  messageText = `✅ OFFICIAL INSTITUTION NOTICE: The ${requestType} request for ${studentName} (${rollNo}) from ${startDate} to ${endDate} has been APPROVED by the Class Advisor.\\nRemarks: \"${advisorNotes}\".`;\n} else {\n  messageText = `❌ OFFICIAL INSTITUTION NOTICE: The ${requestType} request for ${studentName} (${rollNo}) from ${startDate} to ${endDate} has been REJECTED by the Class Advisor.\\nRemarks: \"${advisorNotes}\".`;\n}\n\nreturn [{ json: { to: parentPhone, body: messageText, requestId: req.request_id, status } }];"
+      },
+      "name": "Format SMS WhatsApp Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [760, 300]
+    },
+    {
+      "parameters": {
+        "accountSid": "YOUR_TWILIO_ACCOUNT_SID",
+        "authToken": "YOUR_TWILIO_AUTH_TOKEN",
+        "from": "whatsapp:+14155238886",
+        "to": "=whatsapp:{{ $json.to }}",
+        "message": "={{ $json.body }}"
+      },
+      "name": "Dispatch Twilio WhatsApp SMS",
+      "type": "n8n-nodes-base.twilio",
+      "typeVersion": 1,
+      "position": [980, 300]
+    }
+  ],
+  "connections": {
+    "Advisor Action Webhook": { "main": [[{ "node": "Update Request Status DB", "type": "main", "index": 0 }]] },
+    "Update Request Status DB": { "main": [[{ "node": "Fetch Parent Contact DB", "type": "main", "index": 0 }]] },
+    "Fetch Parent Contact DB": { "main": [[{ "node": "Format SMS WhatsApp Payload", "type": "main", "index": 0 }]] },
+    "Format SMS WhatsApp Payload": { "main": [[{ "node": "Dispatch Twilio WhatsApp SMS", "type": "main", "index": 0 }]] }
+  }
+}

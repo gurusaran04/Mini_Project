@@ -1,0 +1,13 @@
+services:
+  asterisk-pbx:
+    image: andrius/asterisk:3.20
+    container_name: asterisk-pbx
+    restart: always
+    network_mode: host
+    volumes:
+      - ./config/pjsip.conf:/etc/asterisk/pjsip.conf:ro
+      - ./config/extensions.conf:/etc/asterisk/extensions.conf:ro
+      - ./config/rtp.conf:/etc/asterisk/rtp.conf:ro
+      - ./config/asterisk.conf:/etc/asterisk/asterisk.conf:ro
+    environment:
+      - TZ=Asia/Kolkata

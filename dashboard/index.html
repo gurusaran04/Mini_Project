@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Faculty & HOD Dashboard | AI Voice IVR Student Leave & OD Management</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+  <div class="app-container">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="logo-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path
+              d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+          </svg>
+        </div>
+        <div>
+          <h2>IVR Portal</h2>
+        </div>
+      </div>
+
+      <nav class="nav-menu">
+        <button class="nav-item active" data-tab="all" id="tab-all">
+          <span class="icon">📊</span> All Processed Requests
+          <span class="badge" id="count-all">0</span>
+        </button>
+        <button class="nav-item" data-tab="pending" id="tab-pending">
+          <span class="icon">⏳</span> Pending Review
+          <span class="badge warning" id="count-pending">0</span>
+        </button>
+        <button class="nav-item" data-tab="approved" id="tab-approved">
+          <span class="icon">✅</span> Approved
+          <span class="badge success" id="count-approved">0</span>
+        </button>
+        <button class="nav-item" data-tab="rejected" id="tab-rejected">
+          <span class="icon">❌</span> Rejected
+          <span class="badge danger" id="count-rejected">0</span>
+        </button>
+
+        <div style="margin: 14px 0; border-top: 1px solid rgba(255,255,255,0.1);"></div>
+
+        <button class="nav-item" data-tab="students" id="tab-students">
+          <span class="icon">👨‍🎓</span> Student Database
+          <span class="badge info" id="count-students">0</span>
+        </button>
+        <button class="nav-item" data-tab="directory" id="tab-directory">
+          <span class="icon">📇</span> Parent Database
+          <span class="badge info" id="count-directory">0</span>
+        </button>
+      </nav>
+
+      <!-- Computerized IVR Business Phone Line & Staff Profile Card -->
+      <div class="advisor-card" style="flex-direction: column; align-items: flex-start; gap: 8px;">
+        <div style="display: flex; align-items: center; gap: 10px; width: 100%;">
+          <div class="avatar">M</div>
+          <div class="details">
+            <h4 id="staff-name">Prof. Madhan</h4>
+            <p id="staff-role">Class Advisor • CSE-3A</p>
+          </div>
+        </div>
+
+        <div
+          style="margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--border-color); width: 100%; font-size: 0.78rem;">
+          <p style="color: var(--text-muted); margin-bottom: 2px;">🤖 Official Computerized IVR Helpline:</p>
+          <strong id="staff-phone-display"
+            style="color: #34d399; font-family: monospace; font-size: 0.88rem; display: block; margin-bottom: 4px;">
+            +91 1800 425 8899
+          </strong>
+          <span style="font-size: 0.72rem; color: #a5b4fc;">(Toll-Free Automated Cloud Gateway)</span>
+        </div>
+
+        <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">
+          📧 <span id="staff-email-display">madhan@institution.edu</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- Header -->
+      <header class="top-bar">
+        <div>
+          <h1 id="page-title">Class Advisor Dashboard</h1>
+          <p class="text-muted" id="page-subtitle">Real-time IVR Voice Call Submissions & Direct Approval Engine</p>
+        </div>
+        <div class="actions-group">
+          <button class="btn btn-primary" id="btn-web-sip-call"
+            style="background: linear-gradient(135deg, #10b981, #059669);">
+            <span class="icon">🎙️</span> Interactive Parent Voice Call
+          </button>
+          <button class="btn btn-secondary" id="btn-mobile-sim"
+            style="background: rgba(56, 189, 248, 0.15); border: 1px solid #38bdf8; color: #7dd3fc;">
+            <span class="icon">📱</span> Mobile Phone Simulator & QR
+          </button>
+          <button class="btn btn-secondary" id="btn-bulk-import">
+            <span class="icon">📂</span> Bulk Import CSV
+          </button>
+          <button class="btn btn-secondary" id="btn-add-parent">
+            <span class="icon">➕</span> Authorize Parent
+          </button>
+          <button class="btn btn-secondary" id="btn-refresh">
+            <span class="icon">🔄</span> Sync Database
+          </button>
+        </div>
+      </header>
+
+      <!-- Stats Grid -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon pending-icon">⏳</div>
+          <div class="stat-info">
+            <span class="stat-label">Pending Reviews</span>
+            <span class="stat-value" id="stat-pending">0</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon approved-icon">✅</div>
+          <div class="stat-info">
+            <span class="stat-label">Approved Requests</span>
+            <span class="stat-value" id="stat-approved">0</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon od-icon">🏅</div>
+          <div class="stat-info">
+            <span class="stat-label">Authorized Parents</span>
+            <span class="stat-value" id="stat-registered-parents">0</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon verify-icon">🛡️</div>
+          <div class="stat-info">
+            <span class="stat-label">Caller ID Defense</span>
+            <span class="stat-value" id="stat-defense">ACTIVE</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filters & Search Toolbar -->
+      <div class="toolbar">
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="search-input"
+            placeholder="Search by Student Name, Roll No, Reason, or Parent Phone...">
+        </div>
+        <div class="filter-group">
+          <select id="filter-type" class="form-select">
+            <option value="ALL">All Types (Leave & OD)</option>
+            <option value="Leave">Leave Only</option>
+            <option value="OD">On-Duty (OD) Only</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- SECTION 1: Main Requests Table -->
+      <div class="table-container glass-panel" id="requests-section">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Request ID & Date</th>
+              <th>Student & Roll No</th>
+              <th>Type</th>
+              <th>Dates & Duration</th>
+              <th>Reason & IVR Recording</th>
+              <th>Verified Parent Number</th>
+              <th>Status</th>
+              <th>Parent SMS Status</th>
+              <th class="text-right">Faculty Action</th>
+            </tr>
+          </thead>
+          <tbody id="requests-tbody">
+            <!-- Dynamic rows inserted via JavaScript -->
+          </tbody>
+        </table>
+        <div id="empty-state" class="empty-state hidden">
+          <div class="empty-icon">📭</div>
+          <h3>No IVR Requests Logged Yet</h3>
+          <p>When an authorized parent calls the college IVR line (+91 1800 425 8899), the AI voice assistant
+            transcribes the request and n8n logs it here automatically!</p>
+        </div>
+      </div>
+
+      <!-- SECTION 2: Student Database View -->
+      <div class="table-container glass-panel hidden" id="students-section">
+        <div
+          style="padding: 16px 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+          <h3>👨‍🎓 Student Database & Leave / OD Balance Summary</h3>
+          <span class="text-muted" style="font-size: 0.85rem;">Tracks student roll numbers, attendance balances, total
+            leaves taken, and OD claims</span>
+        </div>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Roll Number</th>
+              <th>Student Name</th>
+              <th>Department & Year</th>
+              <th>Section</th>
+              <th>Total Leave Count</th>
+              <th>Total OD Count</th>
+              <th>Parent / Guardian Name</th>
+              <th>Assigned Advisor</th>
+              <th class="text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="students-tbody">
+            <!-- Dynamic student records inserted via JavaScript -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- SECTION 3: Parent Database View -->
+      <div class="table-container glass-panel hidden" id="directory-section">
+        <div
+          style="padding: 16px 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+          <h3>📇 Authorized Parent Database & Caller ID Directory</h3>
+          <span class="text-muted" style="font-size: 0.85rem;">Authorized mobile phone numbers linked to their
+            respective children</span>
+        </div>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Roll Number</th>
+              <th>Student Name (Ward)</th>
+              <th>Class / Section</th>
+              <th>Authorized Parent Name</th>
+              <th>Authorized Mobile Number (Caller ID)</th>
+              <th>Verification Status</th>
+              <th class="text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="directory-tbody">
+            <!-- Dynamic parent directory rows -->
+          </tbody>
+        </table>
+        <div id="directory-empty-state" class="empty-state hidden">
+          <div class="empty-icon">📇</div>
+          <h3>No Authorized Parents Registered</h3>
+          <p>Click "➕ Authorize Parent Phone" above to register student parent numbers into the database.</p>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Modal 0: Bulk CSV Database Import Modal -->
+  <div class="modal-overlay hidden" id="bulk-import-modal">
+    <div class="modal-card" style="width: 560px;">
+      <div class="modal-header">
+        <h3>📂 Bulk Parent Phone Directory Database Import</h3>
+        <button class="modal-close" id="bulk-close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="text-muted mb-4">Upload a CSV or paste bulk student roll numbers and parent phone numbers to add
+          multiple records into SQLite database at once.</p>
+
+        <div class="form-group">
+          <label>Paste CSV Data (roll_no, student_name, dept, section, parent_phone, parent_name):</label>
+          <textarea id="bulk-csv-input" rows="6" class="form-select" style="font-family: monospace; font-size: 0.82rem;"
+            placeholder="21CS047,GuruSaran,Computer Science,3-A,+919087598993,Periyasamy&#10;21CS042,Alexander Wright,Computer Science,3-A,+919876543210,Robert Wright&#10;22EC015,Maya Lin,Electronics,2-B,+919876543211,David Lin"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="bulk-cancel-btn">Cancel</button>
+        <button class="btn btn-primary" id="btn-save-bulk">💾 Import All Records into Database</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 1: Interactive Live Voice Call & DTMF Keypad Modal -->
+  <div class="modal-overlay hidden" id="web-sip-modal">
+    <div class="modal-card" style="width: 620px;">
+      <div class="modal-header">
+        <h3>🎙️ Live Asterisk IVR & DTMF Voice Call</h3>
+        <button class="modal-close" id="sip-close-btn">&times;</button>
+      </div>
+      <div class="modal-body text-center" style="padding: 24px;">
+        <div
+          style="background: rgba(15, 23, 42, 0.6); padding: 16px; border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 18px; text-align: left;">
+          <label style="font-size: 0.82rem; color: #a5b4fc; display: block; margin-bottom: 6px;">Calling Parent Mobile
+            Number (Caller ID):</label>
+          <select id="sip-parent-select" class="form-select">
+            <!-- Populated dynamically -->
+          </select>
+        </div>
+
+        <div id="sip-status-box"
+          style="background: rgba(16, 185, 129, 0.1); padding: 18px; border-radius: 12px; border: 1px solid rgba(16, 185, 129, 0.3); margin-bottom: 18px;">
+          <div style="font-size: 2.8rem; margin-bottom: 6px;" id="voice-pulse-icon">🔊</div>
+          <h4 id="sip-call-state" style="color: #34d399; font-weight: 600;">Asterisk IVR Greeting Connected</h4>
+          <p id="sip-audio-prompt" style="font-style: italic; color: #e2e8f0; font-size: 0.94rem; margin-top: 6px;">
+            "Hello, what is your query? Give information about Leave, OD, or contact the Advisor."
+          </p>
+        </div>
+
+        <!-- Interactive DTMF Keypad Section -->
+        <div
+          style="margin-bottom: 18px; background: rgba(30, 41, 59, 0.6); padding: 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);">
+          <label style="font-size: 0.82rem; color: #38bdf8; display: block; margin-bottom: 10px; font-weight: 600;">
+            🔢 Asterisk DTMF Interactive Keypad Menu:
+          </label>
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+            <button class="btn btn-secondary dtmf-btn" data-key="1"
+              style="background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #fca5a5; padding: 12px; flex-direction: column;">
+              <strong style="font-size: 1.2rem;">[ 1 ]</strong>
+              <span style="font-size: 0.75rem;">🔴 Leave Request</span>
+            </button>
+            <button class="btn btn-secondary dtmf-btn" data-key="2"
+              style="background: rgba(56, 189, 248, 0.15); border: 1px solid #38bdf8; color: #7dd3fc; padding: 12px; flex-direction: column;">
+              <strong style="font-size: 1.2rem;">[ 2 ]</strong>
+              <span style="font-size: 0.75rem;">🏅 OD Request</span>
+            </button>
+            <button class="btn btn-secondary dtmf-btn" data-key="3"
+              style="background: rgba(168, 85, 247, 0.15); border: 1px solid #a855f7; color: #d8b4fe; padding: 12px; flex-direction: column;">
+              <strong style="font-size: 1.2rem;">[ 3 ]</strong>
+              <span style="font-size: 0.75rem;">📞 Contact Advisor</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="form-group" style="text-align: left;">
+          <label>Spoken Parent Voice Transcript / Reason:</label>
+          <input type="text" id="sip-reason-text" value="High fever and doctor advised 2 days bed rest."
+            class="form-select">
+        </div>
+
+        <div style="display: flex; gap: 12px; margin-top: 18px;">
+          <button class="btn btn-secondary" id="btn-mic-listen" style="padding: 12px 18px; font-size: 0.9rem; flex: 1;">
+            🎙️ Speak via Mic
+          </button>
+          <button class="btn btn-primary" id="btn-execute-sip-call"
+            style="background: #10b981; padding: 12px 24px; font-size: 0.95rem; flex: 2;">
+            📞 End Call & Submit to n8n & Dashboard
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 2: Register / Authorize Parent Form -->
+  <div class="modal-overlay hidden" id="register-parent-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>➕ Authorize Parent Phone Number</h3>
+        <button class="modal-close" id="reg-close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="text-muted mb-4">Class Advisor Form: Register student roll numbers and parent mobile numbers into the
+          database. Incoming IVR calls from this number will be authenticated and processed.</p>
+
+        <div class="form-group">
+          <label>Student Roll Number:</label>
+          <input type="text" id="reg-roll-no" placeholder="e.g. 21CS042" class="form-select">
+        </div>
+
+        <div class="form-group">
+          <label>Student Full Name:</label>
+          <input type="text" id="reg-student-name" placeholder="e.g. Alexander Wright" class="form-select">
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="form-group">
+            <label>Department:</label>
+            <select id="reg-dept" class="form-select">
+              <option value="Computer Science">Computer Science</option>
+              <option value="Electronics">Electronics</option>
+              <option value="Mechanical">Mechanical</option>
+              <option value="Civil">Civil</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Section:</label>
+            <input type="text" id="reg-section" value="3-A" class="form-select">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Parent / Guardian Name:</label>
+          <input type="text" id="reg-parent-name" placeholder="e.g. Robert Wright" class="form-select">
+        </div>
+
+        <div class="form-group">
+          <label>Parent Mobile Number (E.164 Caller ID):</label>
+          <input type="text" id="reg-parent-phone" placeholder="e.g. +91 98765 43210 or +15559876543"
+            class="form-select">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="reg-cancel-btn">Cancel</button>
+        <button class="btn btn-primary" id="btn-save-parent">💾 Save & Authorize Number</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 3: Review / Action Modal for Faculty Approval -->
+  <div class="modal-overlay hidden" id="action-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="modal-title">Review Request</h3>
+        <button class="modal-close" id="modal-close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="student-meta-box">
+          <div>
+            <span class="label">Student Name</span>
+            <h4 id="modal-student-name">-</h4>
+          </div>
+          <div>
+            <span class="label">Roll Number</span>
+            <h4 id="modal-roll-no">-</h4>
+          </div>
+          <div>
+            <span class="label">Type & Days</span>
+            <span id="modal-type-badge" class="badge">-</span>
+          </div>
+        </div>
+
+        <div class="info-block">
+          <label>Parent Contact (Caller ID Verified):</label>
+          <p id="modal-parent-info" class="text-primary font-medium"></p>
+        </div>
+
+        <div class="info-block">
+          <label>Reason Captured over Voice IVR:</label>
+          <p id="modal-reason" class="reason-quote"></p>
+        </div>
+
+        <div class="form-group">
+          <label for="modal-notes">Prof. Madhan Remarks (Sent via Outbound Parent SMS Notification):</label>
+          <textarea id="modal-notes" rows="3"
+            placeholder="e.g. Approved. Medical certificate to be submitted upon return."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-danger" id="btn-modal-reject">❌ Reject & Notify Parent via SMS</button>
+        <button class="btn btn-success" id="btn-modal-approve">✅ Approve & Notify Parent via SMS</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 4: Audio Player Modal -->
+  <div class="modal-overlay hidden" id="audio-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>🎙️ IVR Call Audio & Speech Playback</h3>
+        <button class="modal-close" id="audio-close-btn">&times;</button>
+      </div>
+      <div class="modal-body text-center" style="padding: 30px 24px;">
+        <div class="audio-wave-box" style="margin-bottom: 20px;">
+          <span style="font-size: 3rem; display: block; margin-bottom: 10px;">🔊</span>
+          <h4 id="audio-title" style="margin-bottom: 6px; color: #f8fafc;">Call SID: CA-9817264812</h4>
+          <p id="audio-subtitle" class="text-muted" style="font-size: 0.85rem;">Voice IVR Parent Call Audio</p>
+        </div>
+
+        <audio id="html5-audio-player" controls style="width: 100%; border-radius: 8px;" src=""></audio>
+
+        <div id="tts-fallback-box" class="hidden"
+          style="margin-top: 15px; background: rgba(99, 102, 241, 0.1); padding: 12px; border-radius: 8px; border: 1px solid rgba(99, 102, 241, 0.3);">
+          <p style="font-size: 0.85rem; color: #a5b4fc;">🔊 Synthesizing speech preview of IVR call transcript.</p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="audio-done-btn">Close Player</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 5: Mobile Phone Simulator & Physical Smartphone QR Scanner Modal -->
+  <div class="modal-overlay hidden" id="mobile-sim-modal">
+    <div class="modal-card" style="width: 820px; max-width: 95vw;">
+      <div class="modal-header">
+        <h3>📱 Mobile Phone IVR Simulator & Physical Phone QR Scanner</h3>
+        <button class="modal-close" id="mobile-sim-close-btn">&times;</button>
+      </div>
+      <div class="modal-body"
+        style="padding: 20px; display: flex; gap: 24px; align-items: flex-start; flex-wrap: wrap;">
+        <!-- Left: QR Code & Direct Mobile Links -->
+        <div
+          style="flex: 1; min-width: 280px; background: rgba(15, 23, 42, 0.6); padding: 18px; border-radius: 14px; border: 1px solid var(--border-color);">
+          <h4 style="color: #38bdf8; font-size: 1rem; margin-bottom: 8px;">📷 Scan with Physical Smartphone Camera:</h4>
+          <p style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 14px;">Point your mobile camera at this QR code to
+            open the interactive IVR call dialer on your phone instantly!</p>
+
+          <div
+            style="text-align: center; margin-bottom: 16px; background: #fff; padding: 12px; border-radius: 12px; display: inline-block;">
+            <img id="mobile-qr-code-img"
+              src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=http://127.0.0.1:3000/mobile.html"
+              alt="Mobile QR Code" style="width: 180px; height: 180px; display: block;">
+          </div>
+
+          <div
+            style="font-size: 0.8rem; text-align: left; background: #0f172a; padding: 12px; border-radius: 10px; border: 1px solid #334155;">
+            <strong style="color: #34d399; display: block; margin-bottom: 4px;">🔗 Mobile Direct Access URLs:</strong>
+            <p style="margin-bottom: 4px; font-family: monospace;">URL: <a href="/mobile.html" target="_blank"
+                style="color: #60a5fa;" id="link-mobile-url">http://localhost:3000/mobile.html</a></p>
+            <p style="font-size: 0.72rem; color: #94a3b8;">Supports Web Speech AI Voice, DTMF tones, and Caller ID
+              simulation on any mobile browser.</p>
+          </div>
+        </div>
+
+        <!-- Right: Live Embedded Smartphone Frame -->
+        <div style="flex: 1; min-width: 320px; display: flex; flex-direction: column; align-items: center;">
+          <h4 style="color: #34d399; font-size: 0.95rem; margin-bottom: 8px;">📱 Live Smartphone Screen Preview:</h4>
+          <iframe src="/mobile.html"
+            style="width: 340px; height: 560px; border: 4px solid #334155; border-radius: 28px; background: #090d16; box-shadow: 0 20px 40px rgba(0,0,0,0.6);"
+            id="mobile-iframe"></iframe>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="mobile-sim-done-btn">Close Simulator</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+
+</html>

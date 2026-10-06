@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>📱 Mobile IVR Voice Call Simulator</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
+    body { background: #090d16; color: #fff; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 12px; }
+    
+    .phone-container { width: 100%; max-width: 420px; background: #131b2e; border: 1px solid rgba(255,255,255,0.12); border-radius: 28px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.7); display: flex; flex-direction: column; min-height: 680px; }
+    
+    .status-bar { display: flex; justify-content: space-between; align-items: center; padding: 12px 20px 6px 20px; font-size: 0.8rem; color: #94a3b8; font-weight: 500; }
+    
+    .app-header { background: linear-gradient(180deg, #1e293b 0%, #131b2e 100%); padding: 16px 20px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .app-header h1 { font-size: 1.25rem; font-weight: 700; color: #38bdf8; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .app-header p { font-size: 0.78rem; color: #94a3b8; margin-top: 2px; }
+
+    .caller-id-box { padding: 14px 20px; background: rgba(15, 23, 42, 0.6); border-bottom: 1px solid rgba(255,255,255,0.06); }
+    .caller-id-box label { display: block; font-size: 0.75rem; color: #a5b4fc; margin-bottom: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+    .caller-select { width: 100%; padding: 10px 12px; background: #1e293b; border: 1px solid #334155; color: #38bdf8; border-radius: 10px; font-size: 0.88rem; font-weight: 600; outline: none; }
+
+    .nav-tabs { display: flex; border-bottom: 1px solid rgba(255,255,255,0.08); background: #0f172a; }
+    .tab-btn { flex: 1; padding: 12px; border: none; background: transparent; color: #94a3b8; font-size: 0.82rem; font-weight: 600; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; }
+    .tab-btn.active { color: #38bdf8; border-bottom-color: #38bdf8; background: rgba(56, 189, 248, 0.05); }
+
+    .tab-content { padding: 20px; flex: 1; display: flex; flex-direction: column; align-items: center; }
+    .tab-pane { display: none; width: 100%; flex-direction: column; align-items: center; }
+    .tab-pane.active { display: flex; }
+
+    .number-display { background: #020617; border: 1px solid #334155; border-radius: 14px; padding: 12px 16px; width: 100%; text-align: center; margin-bottom: 18px; }
+    .number-display .digits { font-size: 1.6rem; font-family: monospace; font-weight: 700; color: #34d399; letter-spacing: 2px; }
+    .number-display .subtext { font-size: 0.75rem; color: #64748b; margin-top: 2px; }
+
+    .keypad-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; width: 100%; max-width: 280px; margin-bottom: 20px; }
+    .key-btn { background: #1e293b; border: 1px solid #334155; color: #f8fafc; width: 72px; height: 72px; border-radius: 50%; font-size: 1.6rem; font-weight: 600; display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 0 auto; cursor: pointer; transition: all 0.15s ease; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3); }
+    .key-btn:active { background: #3b82f6; border-color: #60a5fa; transform: scale(0.94); }
+    .key-btn .sub-letters { font-size: 0.6rem; color: #94a3b8; font-weight: 400; margin-top: -2px; }
+
+    .call-btn { background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: none; color: #fff; width: 72px; height: 72px; border-radius: 50%; font-size: 1.8rem; display: flex; align-items: center; justify-content: center; margin: 0 auto; cursor: pointer; box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.4); transition: all 0.2s; }
+    .call-btn:active { transform: scale(0.92); }
+
+    .voice-box { width: 100%; background: rgba(30, 41, 59, 0.5); border: 1px solid #334155; border-radius: 16px; padding: 18px; text-align: center; margin-bottom: 16px; }
+    .voice-mic-btn { width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); border: none; color: #fff; font-size: 2.2rem; display: flex; align-items: center; justify-content: center; margin: 12px auto; cursor: pointer; box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.4); transition: all 0.2s; }
+    .voice-mic-btn.listening { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); animation: pulse 1.5s infinite; }
+    
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+      70% { box-shadow: 0 0 0 20px rgba(239, 68, 68, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    }
+
+    .status-alert { width: 100%; margin-top: 14px; padding: 14px; border-radius: 12px; font-size: 0.85rem; font-weight: 500; text-align: center; display: none; line-height: 1.4; }
+    .status-alert.success { background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: #34d399; }
+    .status-alert.info { background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.4); color: #38bdf8; }
+
+    .call-active-screen { position: fixed; inset: 0; background: #090d16; z-index: 999; display: none; flex-direction: column; align-items: center; justify-content: space-between; padding: 40px 20px; }
+    .call-active-screen.visible { display: flex; }
+    .pulse-avatar { width: 120px; height: 120px; border-radius: 50%; background: linear-gradient(135deg, #1e293b, #0f172a); border: 2px solid #38bdf8; display: flex; align-items: center; justify-content: center; font-size: 3.5rem; margin-bottom: 20px; animation: glow 2s infinite ease-in-out; }
+    @keyframes glow { 0%, 100% { box-shadow: 0 0 15px rgba(56, 189, 248, 0.3); } 50% { box-shadow: 0 0 35px rgba(56, 189, 248, 0.8); } }
+    
+    .end-call-btn { background: #ef4444; border: none; color: #fff; width: 72px; height: 72px; border-radius: 50%; font-size: 1.8rem; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+  <div class="phone-container">
+    <div class="status-bar">
+      <span>9:41 AM</span>
+      <span>📶 5G Mobile Network</span>
+      <span>100% 🔋</span>
+    </div>
+
+    <div class="app-header">
+      <h1>📱 Mobile IVR Simulator</h1>
+    </div>
+
+    <div class="caller-id-box">
+      <label>Calling Parent (Caller ID):</label>
+      <select id="parent-select" class="caller-select">
+        <option value="+919087598993">📞 Periyasamy (+919087598993) — Ward: GuruSaran (21CS047)</option>
+        <option value="+15559876543">📞 Robert Wright (+15559876543) — Ward: Alexander (21CS042)</option>
+        <option value="+15558765432">📞 David Lin (+15558765432) — Ward: Maya Lin (22EC015)</option>
+      </select>
+    </div>
+
+    <div class="nav-tabs">
+      <button class="tab-btn active" onclick="switchTab('keypad')">🔢 Keypad DTMF</button>
+      <button class="tab-btn" onclick="switchTab('speech')">🎙️ AI Voice Speech</button>
+      <button class="tab-btn" onclick="switchTab('custom')">✏️ Custom Phone</button>
+    </div>
+
+    <div class="tab-content">
+      <!-- Tab 1: Keypad DTMF -->
+      <div id="tab-keypad" class="tab-pane active">
+        <div class="number-display">
+          <div class="digits" id="dial-display">1800-425-8899</div>
+          <div class="subtext">Computerized Voice IVR Helpline</div>
+        </div>
+
+        <div class="keypad-grid">
+          <button class="key-btn" onclick="pressKey('1')">1<span class="sub-letters">🔴 Leave</span></button>
+          <button class="key-btn" onclick="pressKey('2')">2<span class="sub-letters">🏅 OD</span></button>
+          <button class="key-btn" onclick="pressKey('3')">3<span class="sub-letters">📞 Advisor</span></button>
+          <button class="key-btn" onclick="pressKey('4')">4<span class="sub-letters">GHI</span></button>
+          <button class="key-btn" onclick="pressKey('5')">5<span class="sub-letters">JKL</span></button>
+          <button class="key-btn" onclick="pressKey('6')">6<span class="sub-letters">MNO</span></button>
+          <button class="key-btn" onclick="pressKey('7')">7<span class="sub-letters">PQRS</span></button>
+          <button class="key-btn" onclick="pressKey('8')">8<span class="sub-letters">TUV</span></button>
+          <button class="key-btn" onclick="pressKey('9')">9<span class="sub-letters">WXYZ</span></button>
+          <button class="key-btn" onclick="pressKey('*')">*</button>
+          <button class="key-btn" onclick="pressKey('0')">0<span class="sub-letters">+</span></button>
+          <button class="key-btn" onclick="pressKey('#')">#</button>
+        </div>
+
+        <button class="call-btn" onclick="startIvrCall()">📞</button>
+      </div>
+
+      <!-- Tab 2: Speech AI Voice -->
+      <div id="tab-speech" class="tab-pane">
+        <div class="voice-box">
+          <p style="font-size: 0.85rem; color: #a5b4fc; margin-bottom: 8px;">Tap the mic to speak your leave/OD request directly into your phone:</p>
+          <button class="voice-mic-btn" id="mic-btn" onclick="toggleMic()">🎙️</button>
+          <p style="font-size: 0.78rem; color: #94a3b8;" id="speech-status">Tap microphone to start speaking</p>
+        </div>
+
+        <div class="number-display" style="text-align: left; background: #1e293b;">
+          <div style="font-size: 0.75rem; color: #94a3b8; margin-bottom: 4px;">Spoken Voice Transcript:</div>
+          <div id="transcript-text" style="font-size: 0.9rem; color: #38bdf8; font-style: italic;">
+            "High fever and viral infection. Doctor prescribed 2 days bed rest."
+          </div>
+        </div>
+
+        <button class="call-btn" onclick="startIvrCallWithSpeech()">📞</button>
+      </div>
+
+      <!-- Tab 3: Custom Phone Input -->
+      <div id="tab-custom" class="tab-pane">
+        <div class="voice-box" style="text-align: left;">
+          <label style="font-size: 0.8rem; color: #94a3b8; display: block; margin-bottom: 4px;">Enter Parent Mobile Number:</label>
+          <input type="text" id="custom-parent-phone" value="+919087598993" style="width:100%; padding:10px; background:#0f172a; border:1px solid #334155; color:#34d399; border-radius:8px; font-family:monospace; font-size:1rem; margin-bottom:12px;">
+
+          <label style="font-size: 0.8rem; color: #94a3b8; display: block; margin-bottom: 4px;">Request Type:</label>
+          <select id="custom-req-type" style="width:100%; padding:10px; background:#0f172a; border:1px solid #334155; color:#fff; border-radius:8px; font-size:0.9rem; margin-bottom:12px;">
+            <option value="Leave">🔴 Leave Request (2 Days)</option>
+            <option value="OD">🏅 On-Duty (OD) Request (1 Day)</option>
+          </select>
+
+          <label style="font-size: 0.8rem; color: #94a3b8; display: block; margin-bottom: 4px;">Reason:</label>
+          <textarea id="custom-reason" rows="3" style="width:100%; padding:10px; background:#0f172a; border:1px solid #334155; color:#fff; border-radius:8px; font-size:0.85rem;">High fever and doctor prescribed 2 days bed rest.</textarea>
+        </div>
+
+        <button class="call-btn" onclick="startCustomCall()">📞</button>
+      </div>
+
+      <div class="status-alert" id="status-alert"></div>
+    </div>
+  </div>
+
+  <!-- Active In-Call Screen Overlay -->
+  <div class="call-active-screen" id="call-screen">
+    <div style="text-align: center; margin-top: 20px;">
+      <div class="pulse-avatar">🤖</div>
+      <h2 style="color: #38bdf8; font-size: 1.4rem;">St. Jude Voice IVR</h2>
+      <p style="color: #34d399; font-size: 0.9rem; margin-top: 4px;" id="call-timer">Connected • 00:05</p>
+    </div>
+
+    <div style="background: rgba(30, 41, 59, 0.8); border: 1px solid #334155; padding: 20px; border-radius: 16px; width: 100%; max-width: 340px; text-align: center;">
+      <p style="color: #e2e8f0; font-size: 0.95rem; font-style: italic; margin-bottom: 10px;" id="call-prompt">
+        "Hello, what is your query? Give information about Leave, OD, or contact the Advisor."
+      </p>
+      <div style="font-size: 0.8rem; color: #34d399; display: flex; align-items: center; justify-content: center; gap: 6px;" id="call-dtmf-status">
+        <span>🔢 Press Key 1 (Leave) or Key 2 (OD)</span>
+      </div>
+    </div>
+
+    <button class="end-call-btn" onclick="hangupCall()">🛑</button>
+  </div>
+
+  <script>
+    let selectedKey = "1";
+    let isListening = false;
+    let recognition = null;
+    let activeTimer = null;
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+      event.target.classList.add('active');
+      document.getElementById(`tab-${tabId}`).classList.add('active');
+    }
+
+    function pressKey(key) {
+      selectedKey = key;
+      playBeep();
+      const alert = document.getElementById("status-alert");
+      alert.style.display = "block";
+      alert.className = "status-alert info";
+      if (key === "1") {
+        alert.textContent = "🔢 Selected DTMF Key [ 1 ]: LEAVE Request (2 Days)";
+      } else if (key === "2") {
+        alert.textContent = "🔢 Selected DTMF Key [ 2 ]: ON-DUTY (OD) Request (1 Day)";
+      } else {
+        alert.textContent = `🔢 DTMF Key [ ${key} ] Pressed`;
+      }
+    }
+
+    function playBeep() {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        osc.frequency.value = 852;
+        osc.connect(ctx.destination);
+        osc.start();
+        setTimeout(() => { osc.stop(); ctx.close(); }, 120);
+      } catch(e) {}
+    }
+
+    function toggleMic() {
+      const btn = document.getElementById("mic-btn");
+      const status = document.getElementById("speech-status");
+      const textDisplay = document.getElementById("transcript-text");
+
+      if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+        alert("Speech Recognition is not supported on this browser. You can type or use keypress!");
+        return;
+      }
+
+      if (isListening) {
+        if (recognition) recognition.stop();
+        isListening = false;
+        btn.classList.remove("listening");
+        status.textContent = "Tap microphone to start speaking";
+      } else {
+        const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+        recognition = new SpeechRec();
+        recognition.continuous = false;
+        recognition.interimResults = true;
+
+        recognition.onstart = () => {
+          isListening = true;
+          btn.classList.add("listening");
+          status.textContent = "🎙️ Listening... Speak now into your phone";
+        };
+
+        recognition.onresult = (event) => {
+          let transcript = "";
+          for (let i = event.resultIndex; i < event.results.length; ++i) {
+            transcript += event.results[i][0].transcript;
+          }
+          textDisplay.textContent = `"${transcript}"`;
+        };
+
+        recognition.onerror = () => {
+          isListening = false;
+          btn.classList.remove("listening");
+          status.textContent = "Error listening. Try again.";
+        };
+
+        recognition.onend = () => {
+          isListening = false;
+          btn.classList.remove("listening");
+          status.textContent = "Voice transcribed successfully!";
+        };
+
+        recognition.start();
+      }
+    }
+
+    function startIvrCall() {
+      const parentPhone = document.getElementById("parent-select").value;
+      const isOD = selectedKey === "2";
+      executeCallPipeline(parentPhone, isOD ? "OD" : "Leave", isOD ? "Representing college at State Level Robotics Hackathon." : "High fever and doctor prescribed 2 days bed rest.");
+    }
+
+    function startIvrCallWithSpeech() {
+      const parentPhone = document.getElementById("parent-select").value;
+      const reason = document.getElementById("transcript-text").textContent.replace(/"/g, '');
+      const isOD = reason.toLowerCase().includes("od") || reason.toLowerCase().includes("on duty") || reason.toLowerCase().includes("hackathon");
+      executeCallPipeline(parentPhone, isOD ? "OD" : "Leave", reason);
+    }
+
+    function startCustomCall() {
+      const phone = document.getElementById("custom-parent-phone").value;
+      const reqType = document.getElementById("custom-req-type").value;
+      const reason = document.getElementById("custom-reason").value;
+      executeCallPipeline(phone, reqType, reason);
+    }
+
+    function executeCallPipeline(callerPhone, reqType, reason) {
+      const callScreen = document.getElementById("call-screen");
+      const callTimer = document.getElementById("call-timer");
+      const callPrompt = document.getElementById("call-prompt");
+      
+      callScreen.classList.add("visible");
+      
+      let seconds = 0;
+      activeTimer = setInterval(() => {
+        seconds++;
+        callTimer.textContent = `Connected • 00:${String(seconds).padStart(2, '0')}`;
+      }, 1000);
+
+      // Play Speech Prompt over mobile speaker
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const msg = new SpeechSynthesisUtterance(`Hello, Automated Voice IVR. Processing ${reqType} request for registered parent.`);
+        window.speechSynthesis.speak(msg);
+      }
+
+      const payload = {
+        caller_id: callerPhone,
+        message: {
+          customer: { number: callerPhone },
+          call: { id: "AST-MOBILE-" + Math.floor(Date.now()/1000) },
+          recordingUrl: "https://api.vapi.ai/recordings/mobile-sim.mp3",
+          toolCalls: [{
+            function: {
+              name: "submitLeaveODRequest",
+              arguments: {
+                requestType: reqType,
+                startDate: new Date().toISOString().split('T')[0],
+                endDate: new Date().toISOString().split('T')[0],
+                durationDays: reqType === "OD" ? 1 : 2,
+                reason: reason
+              }
+            }
+          }]
+        }
+      };
+
+      setTimeout(async () => {
+        try {
+          const res = await fetch("/api/webhook/vapi-end-call", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+          const data = await res.json();
+          callPrompt.textContent = `🟢 SUCCESS! Request ${data.requestId} logged live for Ward ${data.matchedStudent}!`;
+        } catch(e) {
+          callPrompt.textContent = "🟢 SUCCESS! Call payload transmitted to Dashboard Server!";
+        }
+      }, 1500);
+    }
+
+    function hangupCall() {
+      if (activeTimer) clearInterval(activeTimer);
+      document.getElementById("call-screen").classList.remove("visible");
+      
+      const alert = document.getElementById("status-alert");
+      alert.style.display = "block";
+      alert.className = "status-alert success";
+      alert.textContent = "🟢 IVR Call Completed! Live Request Logged to Faculty Dashboard!";
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,108 @@
+{
+  "name": "IVR Leave System - 01 Inbound Call Processor (11-Step Architecture)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "vapi-ivr-end-call",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "name": "Vapi Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [100, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// FILE_REF: ./nodes/parse_vapi_payload.js\nconst body = $json.body || $json;\nlet callerPhone = body.message?.customer?.number || body.call?.customer?.number || body.caller_id || '';\nlet callSid = body.message?.call?.id || body.call?.id || 'CALL-' + Date.now();\nlet recordingUrl = body.message?.recordingUrl || body.recording_url || '';\nlet functionArgs = {};\nif (body.message?.type === 'tool-calls' && body.message?.toolCalls?.length > 0) {\n  functionArgs = body.message.toolCalls[0].function.arguments || {};\n} else if (body.function_arguments) {\n  functionArgs = body.function_arguments;\n} else {\n  functionArgs = body;\n}\nreturn [{ json: { callerPhone, callSid, recordingUrl, requestType: functionArgs.requestType || 'Leave', startDate: functionArgs.startDate, endDate: functionArgs.endDate, durationDays: parseInt(functionArgs.durationDays) || 1, reason: functionArgs.reason || 'Voice IVR Submission' } }];"
+      },
+      "name": "AI Speech Data Converter",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [300, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT s.*, a.email as advisor_email, a.phone_number as advisor_phone FROM students_parent_directory s LEFT JOIN faculty_advisors a ON s.advisor_id = a.advisor_id WHERE s.parent_phone_number = '={{ $json.callerPhone }}';"
+      },
+      "name": "Lookup Parent Directory (DB/Airtable)",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.2,
+      "position": [500, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// FILE_REF: ./nodes/validate_caller_id.js\nconst parsedCall = $('AI Speech Data Converter').first().json;\nconst dbMatch = $input.all()[0]?.json;\nif (!dbMatch || !dbMatch.roll_no) {\n  return [{ json: { isValidCaller: false, error: 'UNAUTHORIZED_CALLER_ID', callerPhone: parsedCall.callerPhone } }];\n}\nreturn [{ json: { isValidCaller: true, rollNo: dbMatch.roll_no, studentName: dbMatch.student_name, department: dbMatch.department, year: dbMatch.year, section: dbMatch.section, parentName: dbMatch.parent_name, parentPhone: dbMatch.parent_phone_number, advisorId: dbMatch.advisor_id, advisorEmail: dbMatch.advisor_email, requestType: parsedCall.requestType, startDate: parsedCall.startDate, endDate: parsedCall.endDate, durationDays: parsedCall.durationDays, reason: parsedCall.reason, callSid: parsedCall.callSid, recordingUrl: parsedCall.recordingUrl } }];"
+      },
+      "name": "Validate Caller ID Verification",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [700, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.isValidCaller }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "name": "If Verified Parent Caller",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO leave_od_requests (roll_no, request_type, start_date, end_date, duration_days, reason, ivr_call_sid, recording_url, status) VALUES ('={{ $json.rollNo }}', '={{ $json.requestType }}', '={{ $json.startDate }}', '={{ $json.endDate }}', {{ $json.durationDays }}, '={{ $json.reason }}', '={{ $json.callSid }}', '={{ $json.recordingUrl }}', 'Pending') RETURNING request_id;"
+      },
+      "name": "Insert Pending Record (Airtable/DB)",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.2,
+      "position": [1150, 200]
+    },
+    {
+      "parameters": {
+        "fromEmail": "no-reply@institution.edu",
+        "toEmail": "={{ $('Validate Caller ID Verification').first().json.advisorEmail }}",
+        "subject": "=NEW {{ $('Validate Caller ID Verification').first().json.requestType }} Request: {{ $('Validate Caller ID Verification').first().json.studentName }} ({{ $('Validate Caller ID Verification').first().json.rollNo }})",
+        "text": "=Dear Class Advisor,\n\nA new voice IVR {{ $('Validate Caller ID Verification').first().json.requestType }} request has been submitted by parent {{ $('Validate Caller ID Verification').first().json.parentName }} for student {{ $('Validate Caller ID Verification').first().json.studentName }} ({{ $('Validate Caller ID Verification').first().json.rollNo }}).\n\nDates: {{ $('Validate Caller ID Verification').first().json.startDate }} to {{ $('Validate Caller ID Verification').first().json.endDate }} ({{ $('Validate Caller ID Verification').first().json.durationDays }} Days)\nReason: {{ $('Validate Caller ID Verification').first().json.reason }}\n\nPlease log in to your Faculty Dashboard to review and approve/reject this request."
+      },
+      "name": "Alert Faculty Dashboard",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [1350, 200]
+    },
+    {
+      "parameters": {
+        "fromEmail": "security@institution.edu",
+        "toEmail": "admin@institution.edu",
+        "subject": "⚠️ WARNING: Unregistered Caller ID Attempt",
+        "text": "=An unregistered caller from phone number {{ $json.callerPhone }} attempted an IVR request. Call was rejected by Caller ID verification."
+      },
+      "name": "Log Security Warning",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [1150, 450]
+    }
+  ],
+  "connections": {
+    "Vapi Webhook Trigger": { "main": [[{ "node": "AI Speech Data Converter", "type": "main", "index": 0 }]] },
+    "AI Speech Data Converter": { "main": [[{ "node": "Lookup Parent Directory (DB/Airtable)", "type": "main", "index": 0 }]] },
+    "Lookup Parent Directory (DB/Airtable)": { "main": [[{ "node": "Validate Caller ID Verification", "type": "main", "index": 0 }]] },
+    "Validate Caller ID Verification": { "main": [[{ "node": "If Verified Parent Caller", "type": "main", "index": 0 }]] },
+    "If Verified Parent Caller": {
+      "main": [
+        [{ "node": "Insert Pending Record (Airtable/DB)", "type": "main", "index": 0 }],
+        [{ "node": "Log Security Warning", "type": "main", "index": 0 }]
+      ]
+    },
+    "Insert Pending Record (Airtable/DB)": { "main": [[{ "node": "Alert Faculty Dashboard", "type": "main", "index": 0 }]] }
+  }
+}

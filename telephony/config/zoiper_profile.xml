@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<zoiper_profile version="1.0">
+  <account name="Asterisk Parent 1001">
+    <domain>127.0.0.1:5060</domain>
+    <username>1001</username>
+    <password>password1001</password>
+    <transport>UDP</transport>
+    <display_name>Parent Softphone</display_name>
+    <register_on_startup>true</register_on_startup>
+  </account>
+  <account name="Asterisk Faculty 1002">
+    <domain>127.0.0.1:5060</domain>
+    <username>1002</username>
+    <password>password1002</password>
+    <transport>UDP</transport>
+    <display_name>Prof. Madhan (Faculty)</display_name>
+    <register_on_startup>true</register_on_startup>
+  </account>
+</zoiper_profile>
