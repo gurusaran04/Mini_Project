@@ -21,7 +21,7 @@ echo Staging all files...
 git add .
 
 echo Committing files...
-git commit -m "Initial commit - AI Voice IVR System Vercel Ready"
+git commit -m "Initial commit - AI Voice IVR System Vercel Ready" 2>nul
 
 echo Setting main branch...
 git branch -M main
@@ -31,7 +31,7 @@ git remote remove origin 2>nul
 git remote add origin https://github.com/gurusaran04/Mini_Project.git
 
 echo Pushing code to GitHub...
-git push -u origin main
+git push -u origin main --force
 
 echo.
 echo =========================================================================
