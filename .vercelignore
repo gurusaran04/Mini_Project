@@ -1,0 +1,6 @@
+server/package.json
+server/server.js
+server/Dockerfile
+telephony/
+asterisk/
+n8n/

@@ -21,7 +21,7 @@ echo Staging all files...
 git add .
 
 echo Committing files...
-git commit -m "Initial commit - AI Voice IVR System Vercel Ready" 2>nul
+git commit -m "Configure single unified Vercel deployment with .vercelignore" 2>nul
 
 echo Setting main branch...
 git branch -M main
@@ -36,7 +36,7 @@ git push -u origin main --force
 echo.
 echo =========================================================================
 echo [SUCCESS] Code pushed to https://github.com/gurusaran04/Mini_Project.git!
-echo Now go to https://vercel.com/new to deploy!
+echo Now go to https://vercel.com/new and click Deploy!
 echo =========================================================================
 echo.
 pause
