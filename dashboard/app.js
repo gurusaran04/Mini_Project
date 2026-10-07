@@ -4,8 +4,10 @@
  * Hardcoded with 50 Seeded Student-Parent Records for Instant Offline & Online Compatibility.
  */
 
-const API_BASE_URL = (typeof window !== "undefined" && window.location && window.location.hostname && (window.location.hostname.includes("aura-ivr") || window.location.origin.includes("3000") || window.location.origin.includes("8080")))
-  ? `${window.location.protocol}//${window.location.hostname}:3000`
+const API_BASE_URL = (typeof window !== "undefined" && window.location && window.location.hostname)
+  ? (window.location.hostname.includes("vercel.app") || window.location.hostname.includes("now.sh") || !window.location.port
+      ? `${window.location.protocol}//${window.location.hostname}`
+      : `${window.location.protocol}//${window.location.hostname}:${window.location.port}`)
   : "http://localhost:3000";
 
 const FIRST_NAMES = [
@@ -263,24 +265,32 @@ function setupEventListeners() {
       const modal = document.getElementById("mobile-sim-modal");
       if (modal) {
         modal.classList.remove("hidden");
-        let pcIp = "127.0.0.1";
-        try {
-          const res = await fetch(`${API_BASE_URL}/api/get-ip`);
-          if (res.ok) {
-            const data = await res.json();
-            if (data.success && data.ip && data.ip !== "127.0.0.1") {
-              pcIp = data.ip;
+        
+        let mobileUrl = "";
+        if (window.location.hostname.includes("vercel.app") || window.location.hostname.includes("now.sh")) {
+          mobileUrl = `${window.location.protocol}//${window.location.hostname}/mobile.html`;
+        } else {
+          let pcIp = "127.0.0.1";
+          try {
+            const res = await fetch(`${API_BASE_URL}/api/get-ip`);
+            if (res.ok) {
+              const data = await res.json();
+              if (data.success && data.ip && data.ip !== "127.0.0.1") {
+                pcIp = data.ip;
+              }
             }
-          }
-        } catch(e) {}
+          } catch(e) {}
 
-        if (pcIp === "127.0.0.1" && window.location.hostname && window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1") {
-          pcIp = window.location.hostname;
+          if (pcIp === "127.0.0.1" && window.location.hostname && window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1") {
+            pcIp = window.location.hostname;
+          }
+
+          const activePort = window.location.port ? `:${window.location.port}` : ":3000";
+          mobileUrl = (pcIp !== "127.0.0.1") ? `http://${pcIp}${activePort}/mobile.html` : `${window.location.protocol}//localhost${activePort}/mobile.html`;
         }
 
-        const mobileUrl = (pcIp !== "127.0.0.1") ? `http://${pcIp}:3000/mobile.html` : `http://localhost:3000/mobile.html`;
         const qrImg = document.getElementById("mobile-qr-code-img");
-        if (qrImg) qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(mobileUrl)}`;
+        if (qrImg) qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(mobileUrl)}`;
         const linkUrl = document.getElementById("link-mobile-url");
         if (linkUrl) {
           linkUrl.href = mobileUrl;

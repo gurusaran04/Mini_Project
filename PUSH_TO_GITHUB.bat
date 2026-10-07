@@ -1,10 +1,10 @@
 @echo off
-title Push Project to GitHub
+title Push Updates to GitHub & Auto-Deploy Vercel
 color 0A
 cd /d D:\Mini_Project
 
 echo =========================================================================
-echo             AUTOMATIC GITHUB PUSH FOR MINI_PROJECT
+echo       AUTOMATIC GITHUB PUSH & VERCEL AUTO-DEPLOYMENT SYNC
 echo =========================================================================
 echo.
 
@@ -21,7 +21,7 @@ echo Staging all files...
 git add .
 
 echo Committing files...
-git commit -m "Configure single unified Vercel deployment with .vercelignore" 2>nul
+git commit -m "Fix Vercel & Mobile QR URL generator without hardcoded 3000 port" 2>nul
 
 echo Setting main branch...
 git branch -M main
@@ -35,8 +35,7 @@ git push -u origin main --force
 
 echo.
 echo =========================================================================
-echo [SUCCESS] Code pushed to https://github.com/gurusaran04/Mini_Project.git!
-echo Now go to https://vercel.com/new and click Deploy!
+echo [SUCCESS] Code pushed to GitHub! Vercel is auto-deploying in 10 seconds!
 echo =========================================================================
 echo.
 pause
